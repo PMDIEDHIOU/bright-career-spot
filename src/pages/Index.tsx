@@ -1,21 +1,37 @@
+import { lazy, Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import AboutSection from "@/components/AboutSection";
-import SkillsSection from "@/components/SkillsSection";
-import ProjectsSection from "@/components/ProjectsSection";
-import ContactSection from "@/components/ContactSection";
+
+const AboutSection = lazy(() => import("@/components/AboutSection"));
+const SkillsSection = lazy(() => import("@/components/SkillsSection"));
+const ProjectsSection = lazy(() => import("@/components/ProjectsSection"));
+const ContactSection = lazy(() => import("@/components/ContactSection"));
+
+const SectionLoader = () => (
+  <div className="flex min-h-[200px] items-center justify-center">
+    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+  </div>
+);
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <HeroSection />
-      <AboutSection />
-      <SkillsSection />
-      <ProjectsSection />
-      <ContactSection />
+      <Suspense fallback={<SectionLoader />}>
+        <AboutSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <SkillsSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <ProjectsSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <ContactSection />
+      </Suspense>
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} — Conçu & développé avec passion
+        © {new Date().getFullYear()} Pape Moussa Diedhiou — Conçu & développé avec passion
       </footer>
     </div>
   );
