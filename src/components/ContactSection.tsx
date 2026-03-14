@@ -1,44 +1,56 @@
 import { motion } from "framer-motion";
-import { Mail, MapPin, Linkedin, Github, Send } from "lucide-react";
+import { Mail, MapPin, Linkedin, Github, Send, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { z } from "zod";
+import emailjs from "@emailjs/browser";
 
-const contactSchema = z.object({
-  name: z.string().trim().min(1, "Le nom est requis").max(100, "100 caractères max"),
-  email: z.string().trim().email("Email invalide").max(255, "255 caractères max"),
-  message: z.string().trim().min(1, "Le message est requis").max(2000, "2000 caractères max"),
-});
-
-type ContactForm = z.infer<typeof contactSchema>;
+type ContactForm = { name: string; email: string; message: string };
 type FormErrors = Partial<Record<keyof ContactForm, string>>;
+
+const validate = (form: ContactForm): FormErrors => {
+  const errors: FormErrors = {};
+  if (!form.name.trim()) errors.name = "Le nom est requis";
+  if (!form.email.trim()) errors.email = "L'email est requis";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = "Email invalide";
+  if (!form.message.trim()) errors.message = "Le message est requis";
+  return errors;
+};
 
 const ContactSection = () => {
   const [form, setForm] = useState<ContactForm>({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const handleChange = (field: keyof ContactForm, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = contactSchema.safeParse(form);
-    if (!result.success) {
-      const fieldErrors: FormErrors = {};
-      result.error.issues.forEach((issue) => {
-        const field = issue.path[0] as keyof ContactForm;
-        if (!fieldErrors[field]) fieldErrors[field] = issue.message;
-      });
+    const fieldErrors = validate(form);
+    if (Object.keys(fieldErrors).length > 0) {
       setErrors(fieldErrors);
       return;
     }
-    // For now, mailto fallback
-    const subject = encodeURIComponent(`Contact Portfolio — ${result.data.name}`);
-    const body = encodeURIComponent(`Nom: ${result.data.name}\nEmail: ${result.data.email}\n\n${result.data.message}`);
-    window.open(`mailto:contact@example.com?subject=${subject}&body=${body}`);
-    setSent(true);
+
+    setStatus("sending");
+
+    try {
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        {
+          from_name: form.name,
+          from_email: form.email,
+          message: form.message,
+        },
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      );
+      setStatus("sent");
+      setForm({ name: "", email: "", message: "" });
+    } catch {
+      setStatus("error");
+    }
   };
 
   const inputClass =
@@ -67,7 +79,7 @@ const ContactSection = () => {
         </motion.p>
 
         <div className="grid gap-8 md:grid-cols-5">
-          {/* Info */}
+          {/* Infos */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -81,12 +93,13 @@ const ContactSection = () => {
                   <MapPin className="h-4 w-4 text-primary" />
                   <span>Dakar, Sénégal</span>
                 </div>
+                
                 <a
-                  href="mailto:contact@example.com"
+                  href="mailto:papemoussadiedhiou272@gmail.com"
                   className="flex items-center gap-3 text-sm text-foreground transition-colors hover:text-primary"
                 >
                   <Mail className="h-4 w-4 text-primary" />
-                  contact@example.com
+                  papemoussadiedhiou272@gmail.com
                 </a>
               </div>
 
@@ -109,7 +122,7 @@ const ContactSection = () => {
             </div>
           </motion.div>
 
-          {/* Form */}
+          {/* Formulaire */}
           <motion.form
             onSubmit={handleSubmit}
             initial={{ opacity: 0, x: 20 }}
@@ -118,10 +131,10 @@ const ContactSection = () => {
             transition={{ delay: 0.3 }}
             className="card-gradient flex flex-col gap-4 rounded-xl border border-border p-6 md:col-span-3"
           >
-            {sent ? (
+            {status === "sent" ? (
               <div className="flex flex-1 items-center justify-center py-8 text-center">
-                <p className="text-primary font-heading font-semibold">
-                  ✓ Message prêt à envoyer ! Vérifiez votre client mail.
+                <p className="font-heading font-semibold text-primary">
+                  ✓ Message envoyé ! Je vous répondrai bientôt.
                 </p>
               </div>
             ) : (
@@ -136,6 +149,7 @@ const ContactSection = () => {
                   />
                   {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
                 </div>
+
                 <div>
                   <input
                     type="email"
@@ -146,6 +160,7 @@ const ContactSection = () => {
                   />
                   {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
                 </div>
+
                 <div>
                   <textarea
                     rows={4}
@@ -156,12 +171,29 @@ const ContactSection = () => {
                   />
                   {errors.message && <p className="mt-1 text-xs text-destructive">{errors.message}</p>}
                 </div>
+
+                {status === "error" && (
+                  <p className="text-xs text-destructive">
+                    Une erreur est survenue. Réessayez ou contactez-moi directement par email.
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-heading text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 glow-shadow"
+                  disabled={status === "sending"}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-heading text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 glow-shadow disabled:opacity-60"
                 >
-                  <Send className="h-4 w-4" />
-                  Envoyer
+                  {status === "sending" ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Envoi en cours…
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      Envoyer
+                    </>
+                  )}
                 </button>
               </>
             )}

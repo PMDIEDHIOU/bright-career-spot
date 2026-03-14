@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
-import profilePlaceholder from "@/assets/profile-placeholder.png";
+import profilePlaceholder from "@/assets/jah.jpeg";
 
 const HeroSection = () => {
   return (
@@ -40,8 +40,8 @@ const HeroSection = () => {
             className="mb-8 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg"
           >
             Développeur chez <strong className="text-foreground">Mirahtec</strong> à Dakar.
-            Diplômé en Informatique, en Master 1 Ingénierie des Systèmes d'Information.
-            Je conçois des applications web modernes avec React, Laravel et PostgreSQL.
+            Diplômé en Informatique, et actuellement en Master à l'ESMT en Ingénierie des Systèmes d'Information.
+            Je conçois des applications web modernes avec React JS, Laravel, Flask et PostgreSQL etc....
           </motion.p>
 
           <motion.div

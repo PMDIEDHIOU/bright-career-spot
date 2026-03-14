@@ -6,11 +6,11 @@ const timeline = [
     icon: Briefcase,
     title: "Développeur — Mirahtec, Dakar",
     period: "Sept 2024 — Présent",
-    description: "D'abord stagiaire puis contractuel. Développement d'applications web full-stack avec React et Laravel.",
+    description: "D'abord stagiaire puis contractuel. Développement d'applications web full-stack.",
   },
   {
     icon: GraduationCap,
-    title: "Master 1 — Ingénierie des Systèmes d'Information",
+    title: "Master — Ingénierie des Systèmes d'Information",
     period: "En cours",
     description: "Approfondissement en architecture logicielle, bases de données avancées et gestion de projets SI.",
   },
